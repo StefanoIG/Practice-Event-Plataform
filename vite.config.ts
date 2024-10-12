@@ -1,17 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   build: {
-    rollupOptions: {
-      output: {
-        manualChunks: undefined,
-      },
-    },
+    outDir: 'dist', // Aquí es donde se generan los archivos para producción
   },
   server: {
-    historyApiFallback: true, // Redirigir todas las solicitudes a index.html
+    port: 3000,
   },
 });
