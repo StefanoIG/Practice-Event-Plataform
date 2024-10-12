@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import logo from "../../../assets/logo.png";
+
 // Configuración de SweetAlert2
 const MySwal = withReactContent(Swal);
 
@@ -32,11 +33,12 @@ const RegistroForm: React.FC = () => {
 
   // Regex para validaciones estándar
   const regex = {
-    nombre: /^[a-zA-ZÀ-ÿ\s]{1,40}$/, // Solo letras y espacios
-    apellido: /^[a-zA-ZÀ-ÿ\s]{1,40}$/,
+    nombre: /^[a-zA-ZÀ-ÿ\s]*$/, // Solo letras y espacios
+    apellido: /^[a-zA-ZÀ-ÿ\s]*$/,
     correo: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/, // Email válido
     contrasena: /^.{6,12}$/, // Contraseña entre 6 y 12 caracteres
-    telefono: /^\d{7,10}$/, // Teléfono entre 7 y 10 dígitos
+    telefono: /^\d*$/, // Solo números
+    cedula: /^\d*$/,   // Solo números
   };
 
   // Función para validar cédula ecuatoriana
@@ -71,6 +73,7 @@ const RegistroForm: React.FC = () => {
     const registros = JSON.parse(localStorage.getItem("registroData") || "[]");
     return registros.some((registro: FormData) => registro.cedula === cedula);
   };
+
   // Verificar si el correo ya está registrado en localStorage
   const isCorreoDuplicado = (correo: string): boolean => {
     const registros = JSON.parse(localStorage.getItem("registroData") || "[]");
@@ -80,8 +83,32 @@ const RegistroForm: React.FC = () => {
   // Manejo de cambios en los campos del formulario
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    validateField(name, value);
+
+    // Validar y limpiar el campo si es necesario
+    let cleanValue = value;
+
+    // Para nombre y apellido: Solo letras y espacios
+    if (name === "nombre" || name === "apellido") {
+      cleanValue = cleanValue.replace(/[^a-zA-ZÀ-ÿ\s]/g, ""); // Elimina números o caracteres especiales
+      if (value !== cleanValue) {
+        setErrors({ ...errors, [name]: "Solo se permiten letras y espacios." });
+      } else {
+        setErrors({ ...errors, [name]: "" });
+      }
+    }
+
+    // Para cédula y teléfono: Solo números
+    if (name === "cedula" || name === "telefono") {
+      cleanValue = cleanValue.replace(/\D/g, ""); // Elimina cualquier cosa que no sea un número
+      if (value !== cleanValue) {
+        setErrors({ ...errors, [name]: "Solo se permiten números." });
+      } else {
+        setErrors({ ...errors, [name]: "" });
+      }
+    }
+
+    setFormData({ ...formData, [name]: cleanValue });
+    validateField(name, cleanValue);
   };
 
   // Validar campos individualmente
@@ -122,7 +149,9 @@ const RegistroForm: React.FC = () => {
       console.log(errors);
       return;
     }
-     if (isCorreoDuplicado(formData.correo)) {
+
+    // Verificar correo duplicado
+    if (isCorreoDuplicado(formData.correo)) {
       MySwal.fire({
         icon: "error",
         title: "Correo duplicado",
@@ -130,7 +159,7 @@ const RegistroForm: React.FC = () => {
       });
       return;
     }
-    
+
     // Verificar cédula duplicada
     if (isCedulaDuplicada(formData.cedula)) {
       MySwal.fire({
@@ -140,7 +169,6 @@ const RegistroForm: React.FC = () => {
       });
       return;
     }
-   
 
     // Simulación de carga
     setIsLoading(true);
@@ -200,121 +228,185 @@ const RegistroForm: React.FC = () => {
           <div className="flex justify-center px-6 py-12">
             <div className="w-full xl:w-3/4 lg:w-11/12 flex">
               {/* Imagen de la izquierda */}
-                  <div
-                  className="w-full h-auto bg-gray-400 dark:bg-gray-800 hidden lg:block lg:w-5/12 bg-cover rounded-l-lg flex items-center justify-center"
-                  style={{
-                    backgroundImage: `url(${logo})`,
-                    backgroundSize: "contain",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
-                  }}
-                  >
-                  </div>
+              <div
+                className="w-full h-auto bg-gray-400 dark:bg-gray-800 hidden lg:block lg:w-5/12 bg-cover rounded-l-lg flex items-center justify-center"
+                style={{
+                  backgroundImage: `url(${logo})`,
+                  backgroundSize: "contain",
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "center",
+                }}
+              ></div>
 
               {/* Formulario */}
               <div className="w-full lg:w-7/12 bg-white dark:bg-gray-700 p-5 rounded-lg lg:rounded-l-none">
-                <h3 className="py-4 text-2xl text-center text-gray-800 dark:text-white">¡Registra tu cuenta!</h3>
-                <form className="px-8 pt-6 pb-8 mb-4 bg-white dark:bg-gray-800 rounded" onSubmit={handleSubmit}>
+                <h3 className="py-4 text-2xl text-center text-gray-800 dark:text-white">
+                  ¡Registra tu cuenta!
+                </h3>
+                <form
+                  className="px-8 pt-6 pb-8 mb-4 bg-white dark:bg-gray-800 rounded"
+                  onSubmit={handleSubmit}
+                >
                   <div className="mb-4 md:flex md:justify-between">
                     <div className="mb-4 md:mr-2 md:mb-0">
-                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Nombre</label>
+                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">
+                        Nombre
+                      </label>
                       <input
-                        className={`w-full px-3 py-2 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${errors.nombre ? "border-red-500" : "border-gray-300"
-                          }`}
+                        className={`w-full px-3 py-2 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${
+                          errors.nombre
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         name="nombre"
                         type="text"
                         value={formData.nombre}
                         onChange={handleInputChange}
                         placeholder="Nombre"
                       />
-                      {errors.nombre && <p className="text-xs italic text-red-500">{errors.nombre}</p>}
+                      {errors.nombre && (
+                        <p className="text-xs italic text-red-500">
+                          {errors.nombre}
+                        </p>
+                      )}
                     </div>
                     <div className="md:ml-2">
-                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Apellido</label>
+                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">
+                        Apellido
+                      </label>
                       <input
-                        className={`w-full px-3 py-2 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${errors.apellido ? "border-red-500" : "border-gray-300"
-                          }`}
+                        className={`w-full px-3 py-2 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${
+                          errors.apellido
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         name="apellido"
                         type="text"
                         value={formData.apellido}
                         onChange={handleInputChange}
                         placeholder="Apellido"
                       />
-                      {errors.apellido && <p className="text-xs italic text-red-500">{errors.apellido}</p>}
+                      {errors.apellido && (
+                        <p className="text-xs italic text-red-500">
+                          {errors.apellido}
+                        </p>
+                      )}
                     </div>
                   </div>
 
                   <div className="mb-4">
-                    <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Correo</label>
+                    <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">
+                      Correo
+                    </label>
                     <input
-                      className={`w-full px-3 py-2 mb-3 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${errors.correo ? "border-red-500" : "border-gray-300"
-                        }`}
+                      className={`w-full px-3 py-2 mb-3 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${
+                        errors.correo ? "border-red-500" : "border-gray-300"
+                      }`}
                       name="correo"
                       type="email"
                       value={formData.correo}
                       onChange={handleInputChange}
                       placeholder="Correo electrónico"
                     />
-                    {errors.correo && <p className="text-xs italic text-red-500">{errors.correo}</p>}
+                    {errors.correo && (
+                      <p className="text-xs italic text-red-500">
+                        {errors.correo}
+                      </p>
+                    )}
                   </div>
 
                   <div className="mb-4 md:flex md:justify-between">
                     <div className="mb-4 md:mr-2 md:mb-0">
-                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Contraseña</label>
+                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">
+                        Contraseña
+                      </label>
                       <input
-                        className={`w-full px-3 py-2 mb-3 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${errors.contrasena ? "border-red-500" : "border-gray-300"
-                          }`}
+                        className={`w-full px-3 py-2 mb-3 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${
+                          errors.contrasena
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         name="contrasena"
                         type="password"
                         value={formData.contrasena}
                         onChange={handleInputChange}
                         placeholder="******************"
                       />
-                      {errors.contrasena && <p className="text-xs italic text-red-500">{errors.contrasena}</p>}
+                      {errors.contrasena && (
+                        <p className="text-xs italic text-red-500">
+                          {errors.contrasena}
+                        </p>
+                      )}
                     </div>
                     <div className="md:ml-2">
-                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Repetir Contraseña</label>
+                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">
+                        Repetir Contraseña
+                      </label>
                       <input
-                        className={`w-full px-3 py-2 mb-3 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${formData.repetirContrasena !== formData.contrasena ? "border-red-500" : "border-gray-300"
-                          }`}
+                        className={`w-full px-3 py-2 mb-3 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${
+                          formData.repetirContrasena !== formData.contrasena
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         name="repetirContrasena"
                         type="password"
                         value={formData.repetirContrasena}
                         onChange={handleInputChange}
                         placeholder="******************"
                       />
-                      {formData.repetirContrasena !== formData.contrasena && (
-                        <p className="text-xs italic text-red-500">Las contraseñas no coinciden.</p>
+                      {formData.repetirContrasena !==
+                        formData.contrasena && (
+                        <p className="text-xs italic text-red-500">
+                          Las contraseñas no coinciden.
+                        </p>
                       )}
                     </div>
                   </div>
 
                   <div className="mb-4 md:flex md:justify-between">
                     <div className="mb-4 md:mr-2 md:mb-0">
-                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Cédula</label>
+                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">
+                        Cédula
+                      </label>
                       <input
-                        className={`w-full px-3 py-2 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${errors.cedula ? "border-red-500" : "border-gray-300"
-                          }`}
+                        className={`w-full px-3 py-2 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${
+                          errors.cedula
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         name="cedula"
                         type="text"
                         value={formData.cedula}
                         onChange={handleInputChange}
                         placeholder="Cédula"
                       />
-                      {errors.cedula && <p className="text-xs italic text-red-500">{errors.cedula}</p>}
+                      {errors.cedula && (
+                        <p className="text-xs italic text-red-500">
+                          {errors.cedula}
+                        </p>
+                      )}
                     </div>
                     <div className="md:ml-2">
-                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Teléfono</label>
+                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">
+                        Teléfono
+                      </label>
                       <input
-                        className={`w-full px-3 py-2 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${errors.telefono ? "border-red-500" : "border-gray-300"
-                          }`}
+                        className={`w-full px-3 py-2 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${
+                          errors.telefono
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         name="telefono"
                         type="text"
                         value={formData.telefono}
                         onChange={handleInputChange}
                         placeholder="Teléfono"
                       />
-                      {errors.telefono && <p className="text-xs italic text-red-500">{errors.telefono}</p>}
+                      {errors.telefono && (
+                        <p className="text-xs italic text-red-500">
+                          {errors.telefono}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -330,12 +422,10 @@ const RegistroForm: React.FC = () => {
 
                   <hr className="mb-6 border-t" />
                   <div className="text-center">
-                    <a className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800" href="#">
-                      ¿Olvidaste tu contraseña?
-                    </a>
-                  </div>
-                  <div className="text-center">
-                    <a className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800" href="./login">
+                    <a
+                      className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800"
+                      href="./login"
+                    >
                       ¿Ya tienes una cuenta? ¡Inicia Sesión!
                     </a>
                   </div>
@@ -346,7 +436,6 @@ const RegistroForm: React.FC = () => {
         </div>
       </div>
     </div>
-
   );
 };
 

@@ -125,7 +125,7 @@ const LoginForm: React.FC<LoginFormProps> = () => {
             {/* Username */}
             <div>
               <label className="block mb-2 text-indigo-500" htmlFor="username">
-                Username
+                Correo Electronico
               </label>
               <input
                 className="w-full p-2 mb-6 text-indigo-700 border-b-2 border-indigo-500 outline-none focus:bg-gray-300"
@@ -139,7 +139,7 @@ const LoginForm: React.FC<LoginFormProps> = () => {
             {/* Password */}
             <div>
               <label className="block mb-2 text-indigo-500" htmlFor="password">
-                Password
+                Contrasena
               </label>
               <input
                 className="w-full p-2 mb-6 text-indigo-700 border-b-2 border-indigo-500 outline-none focus:bg-gray-300"
@@ -165,10 +165,10 @@ const LoginForm: React.FC<LoginFormProps> = () => {
               className="text-indigo-700 hover:text-pink-700 text-sm"
               onClick={handleForgotPassword}
             >
-              Forgot Password?
+              Olvidaste tu contrasena?
             </button>
             <a className="text-indigo-700 hover:text-pink-700 text-sm" href="/register">
-              Create Account
+              Crear Cuenta
             </a>
           </footer>
         </div>
