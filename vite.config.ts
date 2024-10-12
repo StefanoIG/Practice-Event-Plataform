@@ -7,4 +7,11 @@ export default defineConfig({
   server: {
     historyApiFallback: true, // Redirigir todas las solicitudes a index.html
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
 });
