@@ -12,6 +12,6 @@ export default defineConfig({
     },
   },
   server: {
-    historyApiFallback: true, // Redirigir todas las solicitudes a index.html
+    middlewareMode: 'html', // Redirigir todas las solicitudes a index.html
   },
 });
