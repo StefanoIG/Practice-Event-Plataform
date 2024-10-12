@@ -1,17 +1,21 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
-// https://vitejs.dev/config/
+// Exporta la configuración de Vite
 export default defineConfig({
   plugins: [react()],
   build: {
+    // Opcionalmente puedes cambiar la carpeta de salida (si es diferente a dist)
+    outDir: 'dist',
     rollupOptions: {
-      output: {
-        manualChunks: undefined,
+      // Opciones para asegurar que el bundle esté bien hecho
+      input: {
+        main: resolve(__dirname, 'index.html'),
       },
     },
   },
   server: {
-    historyApiFallback: true, // Redirigir todas las solicitudes a index.html
+    port: 3000, // Puedes cambiar el puerto local de desarrollo si quieres
   },
 });
