@@ -33,29 +33,29 @@ const Navbar: React.FC<NavbarProps> = ({ className = '' }) => {
           </div>
           <div className="flex items-center">
             <nav className="font-sen text-white uppercase text-lg lg:flex items-center hidden">
-              <a href="/" className="py-2 px-6 flex">
+              <a href="/" className="py-2 px-6 flex hover:bg-gray-700 active:bg-gray-900">
                 Inicio
               </a>
-              <a href="/events-list" className="py-2 px-6 flex">
-                Sistema de Eventos
+              <a href="/events-list" className="py-2 px-6 flex hover:bg-gray-700 active:bg-gray-900">
+                Eventos
               </a>
 
               {/* Condición para mostrar links según isLoggin */}
               {isLoggin ? (
                 <>
-                  <a href="/create" className="py-2 px-6 flex">
+                  <a href="/create" className="py-2 px-6 flex hover:bg-gray-700 active:bg-gray-900">
                     Crear Evento
                   </a>
-                  <button onClick={handleLogout} className="py-2 px-6 flex">
+                  <button onClick={handleLogout} className="py-2 px-6 flex hover:bg-gray-700 active:bg-gray-900">
                     Cerrar Sesión
                   </button>
                 </>
               ) : (
                 <>
-                  <a href="/login" className="py-2 px-6 flex">
+                  <a href="/login" className="py-2 px-6 flex hover:bg-gray-700 active:bg-gray-900">
                     Iniciar Sesión
                   </a>
-                  <a href="/register" className="py-2 px-6 flex">
+                  <a href="/register" className="py-2 px-6 flex hover:bg-gray-700 active:bg-gray-900">
                     Registro
                   </a>
                 </>

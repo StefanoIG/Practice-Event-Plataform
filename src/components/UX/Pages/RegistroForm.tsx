@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-
+import logo from "../../../assets/logo.png";
 // Configuración de SweetAlert2
 const MySwal = withReactContent(Swal);
 
@@ -71,6 +71,11 @@ const RegistroForm: React.FC = () => {
     const registros = JSON.parse(localStorage.getItem("registroData") || "[]");
     return registros.some((registro: FormData) => registro.cedula === cedula);
   };
+  // Verificar si el correo ya está registrado en localStorage
+  const isCorreoDuplicado = (correo: string): boolean => {
+    const registros = JSON.parse(localStorage.getItem("registroData") || "[]");
+    return registros.some((registro: FormData) => registro.correo === correo);
+  };
 
   // Manejo de cambios en los campos del formulario
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,21 +122,15 @@ const RegistroForm: React.FC = () => {
       console.log(errors);
       return;
     }
-    //verificar correo duplicado
-    if (localStorage.getItem("registroData")) {
-        const registros = JSON.parse(localStorage.getItem("registroData") || "[]");
-        const correoDuplicado = registros.some(
-            (registro: FormData) => registro.correo === formData.correo
-        );
-        if (correoDuplicado) {
-            MySwal.fire({
-            icon: "error",
-            title: "Correo duplicado",
-            text: "Este correo ya está registrado. Por favor, usa uno diferente.",
-            });
-            return;
-        }
-        }
+     if (isCorreoDuplicado(formData.correo)) {
+      MySwal.fire({
+        icon: "error",
+        title: "Correo duplicado",
+        text: "Este correo ya está registrado. Por favor, usa uno diferente.",
+      });
+      return;
+    }
+    
     // Verificar cédula duplicada
     if (isCedulaDuplicada(formData.cedula)) {
       MySwal.fire({
@@ -141,15 +140,15 @@ const RegistroForm: React.FC = () => {
       });
       return;
     }
+   
 
     // Simulación de carga
     setIsLoading(true);
     setTimeout(() => {
-      // Generar ID único y agregarlo al registro
+      // Guardar el registro en localStorage
       const nuevoId = Date.now().toString(); // Crear ID único
       const nuevoRegistro = { ...formData, id: nuevoId };
 
-      // Guardar en localStorage excepto el campo repetirContrasena
       const { repetirContrasena, ...dataToStore } = nuevoRegistro;
       const registrosPrevios = JSON.parse(
         localStorage.getItem("registroData") || "[]"
@@ -163,7 +162,7 @@ const RegistroForm: React.FC = () => {
       MySwal.fire({
         icon: "success",
         title: "¡Registro Exitoso!",
-        text: "Tu cuenta ha sido creada. Redirigiendo a la página de inicio de sesión...",
+        text: "Tu cuenta ha sido creada.",
         toast: true,
         position: "top-end",
         timer: 3000,
@@ -196,149 +195,158 @@ const RegistroForm: React.FC = () => {
           <li></li>
         </ul>
       </div>
+      <div className="h-full">
+        <div className="mx-auto">
+          <div className="flex justify-center px-6 py-12">
+            <div className="w-full xl:w-3/4 lg:w-11/12 flex">
+              {/* Imagen de la izquierda */}
+                  <div
+                  className="w-full h-auto bg-gray-400 dark:bg-gray-800 hidden lg:block lg:w-5/12 bg-cover rounded-l-lg flex items-center justify-center"
+                  style={{
+                    backgroundImage: `url(${logo})`,
+                    backgroundSize: "contain",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center",
+                  }}
+                  >
+                  </div>
 
-      <form onSubmit={handleSubmit} className="max-w-lg mx-auto p-4 space-y-4">
-        {/* Nombre y Apellido */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block">Nombre</label>
-            <input
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onInput={handleInputChange}
-              className={`w-full p-2 border ${
-                errors.nombre ? "border-red-500" : "border-gray-300"
-              } rounded`}
-              placeholder="Nombre"
-            />
-            {errors.nombre && (
-              <p className="text-red-500 text-sm">{errors.nombre}</p>
-            )}
-          </div>
-          <div>
-            <label className="block">Apellido</label>
-            <input
-              type="text"
-              name="apellido"
-              value={formData.apellido}
-              onInput={handleInputChange}
-              className={`w-full p-2 border ${
-                errors.apellido ? "border-red-500" : "border-gray-300"
-              } rounded`}
-              placeholder="Apellido"
-            />
-            {errors.apellido && (
-              <p className="text-red-500 text-sm">{errors.apellido}</p>
-            )}
+              {/* Formulario */}
+              <div className="w-full lg:w-7/12 bg-white dark:bg-gray-700 p-5 rounded-lg lg:rounded-l-none">
+                <h3 className="py-4 text-2xl text-center text-gray-800 dark:text-white">¡Registra tu cuenta!</h3>
+                <form className="px-8 pt-6 pb-8 mb-4 bg-white dark:bg-gray-800 rounded" onSubmit={handleSubmit}>
+                  <div className="mb-4 md:flex md:justify-between">
+                    <div className="mb-4 md:mr-2 md:mb-0">
+                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Nombre</label>
+                      <input
+                        className={`w-full px-3 py-2 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${errors.nombre ? "border-red-500" : "border-gray-300"
+                          }`}
+                        name="nombre"
+                        type="text"
+                        value={formData.nombre}
+                        onChange={handleInputChange}
+                        placeholder="Nombre"
+                      />
+                      {errors.nombre && <p className="text-xs italic text-red-500">{errors.nombre}</p>}
+                    </div>
+                    <div className="md:ml-2">
+                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Apellido</label>
+                      <input
+                        className={`w-full px-3 py-2 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${errors.apellido ? "border-red-500" : "border-gray-300"
+                          }`}
+                        name="apellido"
+                        type="text"
+                        value={formData.apellido}
+                        onChange={handleInputChange}
+                        placeholder="Apellido"
+                      />
+                      {errors.apellido && <p className="text-xs italic text-red-500">{errors.apellido}</p>}
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Correo</label>
+                    <input
+                      className={`w-full px-3 py-2 mb-3 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${errors.correo ? "border-red-500" : "border-gray-300"
+                        }`}
+                      name="correo"
+                      type="email"
+                      value={formData.correo}
+                      onChange={handleInputChange}
+                      placeholder="Correo electrónico"
+                    />
+                    {errors.correo && <p className="text-xs italic text-red-500">{errors.correo}</p>}
+                  </div>
+
+                  <div className="mb-4 md:flex md:justify-between">
+                    <div className="mb-4 md:mr-2 md:mb-0">
+                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Contraseña</label>
+                      <input
+                        className={`w-full px-3 py-2 mb-3 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${errors.contrasena ? "border-red-500" : "border-gray-300"
+                          }`}
+                        name="contrasena"
+                        type="password"
+                        value={formData.contrasena}
+                        onChange={handleInputChange}
+                        placeholder="******************"
+                      />
+                      {errors.contrasena && <p className="text-xs italic text-red-500">{errors.contrasena}</p>}
+                    </div>
+                    <div className="md:ml-2">
+                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Repetir Contraseña</label>
+                      <input
+                        className={`w-full px-3 py-2 mb-3 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${formData.repetirContrasena !== formData.contrasena ? "border-red-500" : "border-gray-300"
+                          }`}
+                        name="repetirContrasena"
+                        type="password"
+                        value={formData.repetirContrasena}
+                        onChange={handleInputChange}
+                        placeholder="******************"
+                      />
+                      {formData.repetirContrasena !== formData.contrasena && (
+                        <p className="text-xs italic text-red-500">Las contraseñas no coinciden.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mb-4 md:flex md:justify-between">
+                    <div className="mb-4 md:mr-2 md:mb-0">
+                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Cédula</label>
+                      <input
+                        className={`w-full px-3 py-2 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${errors.cedula ? "border-red-500" : "border-gray-300"
+                          }`}
+                        name="cedula"
+                        type="text"
+                        value={formData.cedula}
+                        onChange={handleInputChange}
+                        placeholder="Cédula"
+                      />
+                      {errors.cedula && <p className="text-xs italic text-red-500">{errors.cedula}</p>}
+                    </div>
+                    <div className="md:ml-2">
+                      <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">Teléfono</label>
+                      <input
+                        className={`w-full px-3 py-2 text-sm leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline ${errors.telefono ? "border-red-500" : "border-gray-300"
+                          }`}
+                        name="telefono"
+                        type="text"
+                        value={formData.telefono}
+                        onChange={handleInputChange}
+                        placeholder="Teléfono"
+                      />
+                      {errors.telefono && <p className="text-xs italic text-red-500">{errors.telefono}</p>}
+                    </div>
+                  </div>
+
+                  <div className="mb-6 text-center">
+                    <button
+                      type="submit"
+                      className="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded-full hover:bg-blue-700 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-900 focus:outline-none focus:shadow-outline"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Registrando..." : "Registrar Cuenta"}
+                    </button>
+                  </div>
+
+                  <hr className="mb-6 border-t" />
+                  <div className="text-center">
+                    <a className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800" href="#">
+                      ¿Olvidaste tu contraseña?
+                    </a>
+                  </div>
+                  <div className="text-center">
+                    <a className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800" href="./login">
+                      ¿Ya tienes una cuenta? ¡Inicia Sesión!
+                    </a>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Correo */}
-        <div>
-          <label className="block">Correo</label>
-          <input
-            type="email"
-            name="correo"
-            value={formData.correo}
-            onInput={handleInputChange}
-            className={`w-full p-2 border ${
-              errors.correo ? "border-red-500" : "border-gray-300"
-            } rounded`}
-            placeholder="Correo electrónico"
-          />
-          {errors.correo && (
-            <p className="text-red-500 text-sm">{errors.correo}</p>
-          )}
-        </div>
-
-        {/* Contraseña y Repetir Contraseña */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block">Contraseña</label>
-            <input
-              type="password"
-              name="contrasena"
-              value={formData.contrasena}
-              onInput={handleInputChange}
-              className={`w-full p-2 border ${
-                errors.contrasena ? "border-red-500" : "border-gray-300"
-              } rounded`}
-              placeholder="Contraseña"
-            />
-            {errors.contrasena && (
-              <p className="text-red-500 text-sm">{errors.contrasena}</p>
-            )}
-          </div>
-          <div>
-            <label className="block">Repetir Contraseña</label>
-            <input
-              type="password"
-              name="repetirContrasena"
-              value={formData.repetirContrasena}
-              onInput={handleInputChange}
-              className={`w-full p-2 border ${
-                formData.repetirContrasena !== formData.contrasena
-                  ? "border-red-500"
-                  : "border-gray-300"
-              } rounded`}
-              placeholder="Repite tu contraseña"
-            />
-            {formData.repetirContrasena !== formData.contrasena && (
-              <p className="text-red-500 text-sm">
-                Las contraseñas no coinciden.
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Cédula y Teléfono */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block">Cédula</label>
-            <input
-              type="text"
-              name="cedula"
-              value={formData.cedula}
-              onInput={handleInputChange}
-              className={`w-full p-2 border ${
-                errors.cedula ? "border-red-500" : "border-gray-300"
-              } rounded`}
-              placeholder="Cédula"
-            />
-            {errors.cedula && (
-              <p className="text-red-500 text-sm">{errors.cedula}</p>
-            )}
-          </div>
-          <div>
-            <label className="block">Teléfono</label>
-            <input
-              type="text"
-              name="telefono"
-              value={formData.telefono}
-              onInput={handleInputChange}
-              className={`w-full p-2 border ${
-                errors.telefono ? "border-red-500" : "border-gray-300"
-              } rounded`}
-              placeholder="Número de teléfono"
-            />
-            {errors.telefono && (
-              <p className="text-red-500 text-sm">{errors.telefono}</p>
-            )}
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          className={`animate-bounce focus:animate-none hover:animate-none inline-flex text-md font-medium bg-indigo-900 mt-3 px-4 py-2 rounded-lg tracking-wide text-white ${
-            isLoading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          disabled={isLoading}
-        >
-          {isLoading ? "Registrando..." : "Registrarse"}
-        </button>
-      </form>
+      </div>
     </div>
+
   );
 };
 

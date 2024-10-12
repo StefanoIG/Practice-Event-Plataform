@@ -160,7 +160,7 @@ const EventForm: React.FC = () => {
           <li></li>
         </ul>
       </div>
-        <br />
+      
       <div className="flex items-center justify-center p-12">
         <div className="mx-auto w-full max-w-[550px] ">
           <form onSubmit={handleSubmit}>
@@ -242,20 +242,21 @@ const EventForm: React.FC = () => {
             <div className="-mx-3 flex flex-wrap">
               <div className="w-full px-3 sm:w-1/2">
                 <div className="mb-5">
-                  <label
+                    <label
                     htmlFor="date"
                     className="mb-3 block text-base font-medium text-[#07074D]"
-                  >
+                    >
                     Fecha del evento
-                  </label>
-                  <input
+                    </label>
+                    <input
                     type="date"
                     name="date"
                     id="date"
                     value={formData.date}
                     onChange={handleInputChange}
+                    min={new Date().toISOString().split("T")[0]} // No permitir fechas pasadas
                     className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                  />
+                    />
                   {errors.date && (
                     <p className="text-red-500 text-sm">{errors.date}</p>
                   )}
